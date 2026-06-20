@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CycloneOPS PRO — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Rajdhani',sans-serif;
+  background:#03060f;
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+
+/* Animated background */
+.bg-anim{
+  position:fixed;inset:0;z-index:0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(0,229,255,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(124,58,237,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 60% 80%, rgba(255,75,110,0.04) 0%, transparent 50%);
+}
+
+/* Spinning radar ring */
+.radar-ring{
+  position:fixed;
+  width:600px;height:600px;
+  border-radius:50%;
+  border:1px solid rgba(0,229,255,0.08);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  animation:ringPulse 4s ease-in-out infinite;
+  z-index:0;
+}
+.radar-ring:nth-child(2){width:400px;height:400px;border-color:rgba(0,229,255,0.06);animation-delay:-1.3s}
+.radar-ring:nth-child(3){width:200px;height:200px;border-color:rgba(0,229,255,0.1);animation-delay:-2.6s}
+
+@keyframes ringPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5}
+  50%{transform:translate(-50%,-50%) scale(1.05);opacity:1}
+}
+
+/* Card */
+.card{
+  position:relative;z-index:10;
+  background:rgba(8,15,31,0.95);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:48px 44px;
+  width:400px;
+  box-shadow:0 24px 80px rgba(0,0,0,0.7);
+  backdrop-filter:blur(20px);
+}
+
+/* Logo */
+.logo{
+  text-align:center;margin-bottom:36px;
+}
+.logo-icon{
+  width:56px;height:56px;
+  border-radius:50%;
+  background:rgba(0,229,255,0.1);
+  border:1.5px solid rgba(0,229,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+  position:relative;
+}
+.logo-icon::before{
+  content:'';
+  position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid rgba(0,229,255,0.15);
+  animation:spinRing 8s linear infinite;
+}
+@keyframes spinRing{to{transform:rotate(360deg)}}
+.logo-icon svg{width:28px;height:28px}
+
+.logo h1{
+  font-size:24px;font-weight:800;
+  color:#e0eaf8;letter-spacing:1px;
+}
+.logo p{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:rgba(255,255,255,0.3);
+  letter-spacing:3px;text-transform:uppercase;margin-top:4px;
+}
+
+/* Form */
+.field{margin-bottom:20px}
+label{
+  display:block;
+  font-size:10px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);
+  font-family:'Share Tech Mono',monospace;
+  margin-bottom:8px;
+}
+input[type=text],input[type=password]{
+  width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  color:#fff;
+  font-family:'Share Tech Mono',monospace;
+  font-size:14px;
+  padding:13px 16px;
+  outline:none;
+  transition:all 0.2s;
+}
+input[type=text]:focus,input[type=password]:focus{
+  border-color:rgba(0,229,255,0.5);
+  background:rgba(0,229,255,0.04);
+  box-shadow:0 0 0 3px rgba(0,229,255,0.08);
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  background:linear-gradient(135deg,#00b8cc,#00e5ff);
+  border:none;border-radius:10px;
+  color:#021a20;
+  font-family:'Rajdhani',sans-serif;
+  font-size:15px;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+  margin-top:8px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,0.35)}
+.btn:active{transform:translateY(0)}
+
+.error{
+  background:rgba(255,75,110,0.1);
+  border:1px solid rgba(255,75,110,0.3);
+  border-radius:8px;
+  padding:10px 14px;
+  color:#ff4b6e;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  margin-bottom:20px;
+  text-align:center;
+}
+
+.hint{
+  text-align:center;
+  margin-top:20px;
+  font-size:11px;
+  font-family:'Share Tech Mono',monospace;
+  color:rgba(255,255,255,0.2);
+}
+.hint span{color:rgba(0,229,255,0.5)}
+</style>
+</head>
+<body>
+
+<div class="bg-anim"></div>
+<div class="radar-ring"></div>
+<div class="radar-ring"></div>
+<div class="radar-ring"></div>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="14" cy="14" r="3" fill="#00e5ff"/>
+        <path d="M14 4C18 4 22 8.5 22 14S18 24 14 24 6 19.5 6 14 10 4 14 4"
+              stroke="#00e5ff" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+        <path d="M4 14C4 10 8 6 14 6S24 10 24 14 20 22 14 22 4 18 4 14"
+              stroke="rgba(0,229,255,0.4)" stroke-width="1" fill="none" stroke-dasharray="3 4"/>
+      </svg>
+    </div>
+    <h1>CycloneOPS PRO</h1>
+    <p>Storm Intelligence System</p>
+  </div>
+
+  {% if error %}
+  <div class="error">⚠ {{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <div class="field">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter username" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn">⚡ Access System</button>
+  </form>
+
+  <div class="hint">
+    Demo → username: <span>admin</span> / password: <span>cyclone123</span>
+  </div>
+</div>
+
+</body>
+</html>

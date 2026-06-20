@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+< lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CycloneOPS PRO — Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<>
+
+<canvas id="windCanvas"></canvas>
+<div id="map"></div>
+
+<div id="navbar">
+  <div class="nav-pill" id="logoBtn" onclick="togglePanel()">
+    <div class="dot"></div>
+    <span>CycloneOPS PRO</span>
+  </div>
+
+  <div class="nav-pill" onclick="document.getElementById('csvInput').click()">
+    <span>📂</span><span>Upload CSV</span>
+  </div>
+  <input type="file" id="csvInput" accept=".csv" onchange="uploadCSV(event)" style="display:none">
+
+  <div id="alertBar" class="alert-bar alert-loading">
+    <span id="alertIcon">⟳</span>
+    <span id="alertText">Loading model...</span>
+  </div>
+
+  <div class="nav-pill" onclick="apiScan()"><span>🛰</span><span>API Scan</span></div>
+  <div class="nav-pill" onclick="trainModel()"><span>⚙</span><span>Re-Train</span></div>
+  <a href="/logout" class="nav-pill" style="text-decoration:none;color:#fff">
+    <span>🚪</span><span>{{ user }}</span>
+  </a>
+</div>
+
+<div id="layerPanel">
+  <div class="layer-btn wind-btn active" id="windBtn" onclick="toggleLayer('wind')" title="Wind">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="22" height="22">
+      <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+    </svg>
+    <span>Wind</span>
+  </div>
+  <div class="layer-btn rain-btn" id="rainBtn" onclick="toggleLayer('rain')" title="Rain">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="22" height="22">
+      <line x1="16" y1="13" x2="16" y2="21"/><line x1="8" y1="13" x2="8" y2="21"/>
+      <line x1="12" y1="15" x2="12" y2="23"/>
+      <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
+    </svg>
+    <span>Rain</span>
+  </div>
+  <div class="layer-btn cloud-btn" id="cloudBtn" onclick="toggleLayer('cloud')" title="Cloud">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="22" height="22">
+      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+    </svg>
+    <span>Cloud</span>
+  </div>
+  <div class="layer-btn temp-btn" id="tempBtn" onclick="toggleLayer('temp')" title="Temp">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="22" height="22">
+      <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+    </svg>
+    <span>Temp</span>
+  </div>
+</div>
+
+<div id="scaleLegend">
+  {% for cat, info in category_info.items() %}
+  <div class="sc-item" style="color:{{ info.color }}">
+    <span class="sc-cat">{{ cat }}</span>
+    <span class="sc-wind">{{ info.risk }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+<div id="predictPanel">
+  <div class="pp-header">
+    <div class="pp-title">PyTorch Predictor</div>
+    <div class="pp-close" onclick="togglePanel()">✕</div>
+  </div>
+  <div class="pp-grid">
+    <div class="pp-field"><label>Lat °N</label><input type="number" id="p_lat" step="0.1" value="10.5"></div>
+    <div class="pp-field"><label>Lon °E</label><input type="number" id="p_lon" step="0.1" value="82.0"></div>
+    <div class="pp-field"><label>ECP hPa</label><input type="number" id="p_ecp" step="1" value="990"></div>
+    <div class="pp-field"><label>ΔP hPa</label><input type="number" id="p_dp" step="1" value="45"></div>
+    <div class="pp-field"><label>MSW kt</label><input type="number" id="p_msw" step="5" value="40"></div>
+    <div class="pp-field"><label>C.I.</label><input type="number" id="p_ci" step="0.5" value="3.0"></div>
+  </div>
+  <button class="predict-btn" onclick="runPredict()">⚡ PREDICT CATEGORY</button>
+</div>
+
+<div id="resultPopup" style="display:none">
+  <div class="result-header">
+    <div class="cat-badge" id="resBadge">—</div>
+    <div>
+      <div class="cat-fullname" id="resName">—</div>
+      <div class="cat-risk" id="resRisk">—</div>
+    </div>
+  </div>
+  <div class="result-bar-row">
+    <span class="rbl">CONFIDENCE</span>
+    <div class="rbt"><div class="rbf" id="rbConf" style="width:0%;background:#00dc82"></div></div>
+    <span class="rbv" id="rvConf">—</span>
+  </div>
+  <div class="result-stats">
+    <div class="rs"><span class="rsv" id="rsDist">—</span><span class="rsl">Avg Dist</span></div>
+    <div class="rs"><span class="rsv" id="rsMsw">—</span><span class="rsl">MSW kt</span></div>
+  </div>
+
+<script src="{{ url_for('static', filename='js/wind_data.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
