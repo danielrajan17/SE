@@ -1,6 +1,25 @@
 import os
+import logging
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Configure logging
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+
+# Configure root logger
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format=LOG_FORMAT,
+    handlers=[
+        logging.FileHandler(os.path.join(LOG_DIR, 'app.log')),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "cyclone-secret-2025")

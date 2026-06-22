@@ -10,6 +10,7 @@ import argparse, sys, os, time
 import torch
 import torch.nn.functional as F
 import numpy as np
+import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -17,19 +18,25 @@ from core.dataset import load_raw, clean, save_processed, get_stats
 from core.model   import CycloneClassifier
 from core.config  import Config
 
+logger = logging.getLogger(__name__)
+
 
 def train(csv_path=None, epochs=None, lr=None):
     print("=" * 55)
     print("  CycloneOPS PRO — PyTorch Training Pipeline")
     print("=" * 55)
 
+    logger.info("Starting training pipeline")
+    
     # ── 1. Load & clean data ──────────────────────────
     print(f"\n[1/4] Loading: {csv_path or Config.DATA_RAW}")
+    logger.info(f"Loading data from {csv_path or Config.DATA_RAW}")
     df = clean(load_raw(csv_path))
     save_processed(df)
     stats = get_stats(df)
     print(f"      Records    : {stats['total']}")
     print(f"      Categories : {stats['categories']}")
+    logger.info(f"Loaded {stats['total']} records with categories {stats['categories']}")
 
     # Apply CLI overrides
     if epochs: Config.EPOCHS = epochs
@@ -71,6 +78,7 @@ def train(csv_path=None, epochs=None, lr=None):
 
     acc = (preds == y_true).mean()
     print(f"      Overall Accuracy : {acc:.4f} ({acc*100:.1f}%)")
+    logger.info(f"Training accuracy: {acc:.4f} ({acc*100:.1f}%)")
     print(f"      Per-class:")
     for i, cat in enumerate(Config.CATEGORIES):
         mask = y_true == i
@@ -78,16 +86,20 @@ def train(csv_path=None, epochs=None, lr=None):
             continue
         cat_acc = (preds[mask] == i).mean()
         print(f"        {cat:<5} → {cat_acc:.3f}  ({mask.sum()} samples)")
+        logger.debug(f"Category {cat}: accuracy {cat_acc:.3f} ({mask.sum()} samples)")
 
     # ── 4. Save ───────────────────────────────────────
     print(f"\n[4/4] Saving model ...")
+    logger.info("Saving trained model")
     clf.save()
+    logger.info(f"Model saved to {Config.MODEL_PATH}")
 
     print(f"\n{'='*55}")
     print(f"  ✅  Training complete! ({elapsed:.1f}s)")
     print(f"  Model  : {Config.MODEL_PATH}")
     print(f"  Run    : python app/main.py")
     print(f"{'='*55}\n")
+    logger.info(f"Training completed successfully in {elapsed:.1f}s")
 
 
 if __name__ == "__main__":

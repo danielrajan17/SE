@@ -2,14 +2,18 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.config import Config
+
+logger = logging.getLogger(__name__)
 
 
 def load_raw(path=None) -> pd.DataFrame:
     """Load raw CSV, handle multiple date formats and missing values."""
     path = path or Config.DATA_RAW
+    logger.info(f"Loading raw data from {path}")
     df = pd.read_csv(path)
 
     # Rename columns to standard names
@@ -55,16 +59,19 @@ def save_processed(df: pd.DataFrame, path=None):
     path = path or Config.DATA_PROCESSED
     os.makedirs(os.path.dirname(path), exist_ok=True)
     df.to_csv(path, index=False)
+    logger.info(f"Saved {len(df)} records to {path}")
     print(f"[dataset] Saved {len(df)} records → {path}")
 
 
 def load_processed(path=None) -> pd.DataFrame:
     path = path or Config.DATA_PROCESSED
     if not os.path.exists(path):
+        logger.warning(f"Processed data not found at {path} — running clean pipeline...")
         print("[dataset] Processed data not found — running clean pipeline...")
         df = clean(load_raw())
         save_processed(df)
         return df
+    logger.info(f"Loading processed data from {path}")
     return pd.read_csv(path)
 
 
