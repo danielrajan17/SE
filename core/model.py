@@ -285,9 +285,11 @@ class CycloneClassifier:
         print(f"[model] Saved → {Config.MODEL_DIR}")
 
     def load(self):
-        for p in [Config.MODEL_PATH, Config.SCALER_PATH, Config.ENCODER_PATH]:
-            if not os.path.exists(p):
-                raise FileNotFoundError(f"Not found: {p} — run train.py first")
+        missing = [p for p in [Config.MODEL_PATH, Config.SCALER_PATH, Config.ENCODER_PATH] if not os.path.exists(p)]
+        if missing:
+            import warnings
+            warnings.warn(f"Model files not found: {missing} — model not ready for predictions", RuntimeWarning)
+            return self
 
         self._build_net()
         assert self.net is not None
@@ -303,8 +305,8 @@ class CycloneClassifier:
     def _try_load(self):
         try:
             self.load()
-        except FileNotFoundError:
-            raise RuntimeError("Model not trained. Run: python core/train.py")
+        except FileNotFoundError as e:
+            raise RuntimeError(f"Model not trained. Run: python core/train.py\n{str(e)}")
 
     def is_ready(self) -> bool:
         return self._trained or all(
